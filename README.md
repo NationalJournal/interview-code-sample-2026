@@ -35,6 +35,12 @@ python manage.py createsuperuser  # optional, for /admin/
 python manage.py runserver
 ```
 
+Then visit:
+
+- `http://127.0.0.1:8000/polls/` — list of polls
+- `http://127.0.0.1:8000/admin/` — manage questions and choices (including
+  each choice's latitude/longitude)
+
 ### Or with Docker
 
 ```bash
@@ -48,12 +54,6 @@ Migrations (and the two seeded polls) run automatically on container start.
 Each `docker run` starts from a fresh SQLite database inside the container,
 since it isn't mounted as a volume — add `-v "$(pwd)/data:/app/data"` and
 point `DATABASES` at that path if you want the data to persist across restarts.
-
-Then visit:
-
-- `http://127.0.0.1:8000/polls/` — list of polls
-- `http://127.0.0.1:8000/admin/` — manage questions and choices (including
-  each choice's latitude/longitude)
 
 ## What changed from the base tutorial
 
