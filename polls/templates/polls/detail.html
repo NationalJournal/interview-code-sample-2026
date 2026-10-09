@@ -1,0 +1,67 @@
+{% extends "polls/base.html" %}
+
+{% block title %}{{ question.question_text }}{% endblock %}
+
+{% block extra_head %}
+{% if has_pins %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>{{ question.question_text }}</h1>
+
+{% if error_message %}<p class="error">{{ error_message }}</p>{% endif %}
+
+{% if has_pins %}
+    <p class="muted">Here's roughly where each option is:</p>
+    <div id="map"></div>
+{% endif %}
+
+<form action="{% url 'polls:vote' question.id %}" method="post" id="vote-form">
+    {% csrf_token %}
+    <fieldset>
+        <legend>Choose an answer</legend>
+        {% for choice in question.choices.all %}
+            <div class="choice-row">
+                <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+                <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label>
+            </div>
+        {% endfor %}
+    </fieldset>
+
+    <input type="submit" value="Vote">
+</form>
+
+{% if has_pins %}
+<script>
+(function () {
+    "use strict";
+    var pins = {{ pins_json|safe }};
+    var map = L.map("map");
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        referrerPolicy: "strict-origin-when-cross-origin",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var bounds = [];
+    pins.forEach(function (pin) {
+        var marker = L.marker([pin.lat, pin.lng]).addTo(map);
+        marker.bindPopup("<strong>" + pin.label + "</strong>");
+        bounds.push([pin.lat, pin.lng]);
+    });
+
+    if (bounds.length === 1) {
+        map.setView(bounds[0], 6);
+    } else {
+        map.fitBounds(bounds, { padding: [30, 30] });
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}
